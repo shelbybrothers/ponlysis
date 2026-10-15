@@ -107,7 +107,7 @@ let addressBad = 0;
 for (const f of [...pages, ...partials, ...dataJson, ...code.filter((c) => c.startsWith('js/') && c !== 'js/config.js')]) {
   const text = read(f);
   for (const m of text.matchAll(/0x[0-9a-fA-F]{40}\b/g)) {
-    if (tokenLive && m[0] === config.TOKEN.ca) continue;
+    if (tokenLive && m[0].toLowerCase() === config.TOKEN.ca.toLowerCase()) continue; // the launchpad link spells it in lowercase
     addressBad++;
     fail('address', `${f} ${where(text, m.index)} carries ${m[0].slice(0, 10)}…`);
   }

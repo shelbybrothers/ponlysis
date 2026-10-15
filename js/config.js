@@ -41,14 +41,14 @@ export const BRAND = Object.freeze({
   footer: '2026 Ponlysis Lab LLC',
 });
 
-// $PONLYSIS launches later on ponsfamily.com. Until then ca and buyUrl are null: the Buy link is inert and reads
+// $PONLYSIS is live on ponsfamily.com: ca is the coin on Robinhood Chain and buyUrl its launchpad page. Set or change
+// BOTH together (buyUrl ends with ca) and run node tools/shell.mjs, which stamps the live footer and nav into every
+// page; js/shell.js does the same at run time from the same TOKEN. With both null, the Buy link is inert and reads
 // TOKEN_BUY_BLANK, Copy CA is disabled and its title reads TOKEN_CA_BLANK, and no page carries a 0x string.
-// When the coin is live, set BOTH (buyUrl is the launchpad page of that CA) and run node tools/shell.mjs, which
-// stamps the live footer and nav into every page; js/shell.js does the same at run time from the same TOKEN.
 export const TOKEN = Object.freeze({
   symbol: 'PONLYSIS',
-  ca: null,
-  buyUrl: null,
+  ca: '0x099762b27115c4d408cE1c862859af7e4A86D605',
+  buyUrl: 'https://ponsfamily.com/launchpad/0x099762b27115c4d408ce1c862859af7e4a86d605',
   launchpad: 'https://ponsfamily.com',
 });
 export const TOKEN_CA_BLANK = 'CA posts here at launch';
