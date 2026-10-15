@@ -131,6 +131,5 @@ Chain mainnet.
 
 - Lead with the instrument, not the mission. Show a structure in the first sentence.
 - Keep the two accents straight: teal is the receptor, green is the ligand, everywhere.
-- The token is a footnote until it launches on ponsfamily.com. Until then: `Buy $PONLYSIS · soon` and
-  `CA posts here at launch`, nothing else.
+- The token is a footnote. It is live on ponsfamily.com: `Buy $PONLYSIS` and `Copy CA`, nothing else.
 - Numbers get units. Estimates get the word estimate. Leads get the phrase "for further study".

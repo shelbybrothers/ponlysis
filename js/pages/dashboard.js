@@ -178,11 +178,11 @@ function paintPayment(status) {
   const tok = $('[data-payment-token]');
   const fee = status && status.runFee !== undefined && status.runFee !== null && BigInt(status.runFee) > 0n ? F.units(status.runFee, 18, 6) : '0.0001';
   const price = status && status.runPrice !== undefined && status.runPrice !== null && BigInt(status.runPrice) > 0n ? F.units(status.runPrice, 18, 2) : '100';
-  line.textContent = `Every docking test costs ${price} $${TOKEN.symbol} or ${fee} ETH, paid to the lab treasury. The payer chooses in the lab.`;
+  line.textContent = `Every docking test costs ${price} $${TOKEN.symbol} or ${fee} ETH, paid to the lab treasury.`;
   const tokenLive = !!status && (status.tokenOpen === true || (status.tokenAllowed !== false && !!status.token && !/^0x0{40}$/i.test(String(status.token))));
-  tok.replaceChildren(...(tokenLive
-    ? [`Both options are open: ${price} $${TOKEN.symbol} from the connected wallet, or ${fee} ETH with the transaction.`]
-    : ['While $PONLYSIS is not launched only the ETH option works, and the token option reads ', el('span', { class: 'pc-mono' }, STR.tokenSoon), '.']));
+  tok.textContent = tokenLive
+    ? `Both options are open: ${price} $${TOKEN.symbol} from the connected wallet, or ${fee} ETH with the transaction.`
+    : `Paying in $${TOKEN.symbol} is not open in the lab yet, so for now every test is paid in ETH.`;
 }
 
 catalog().then(async (c) => {

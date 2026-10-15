@@ -82,7 +82,7 @@ const withQuery = (route) => (suffix ? `${route}${route.includes('?') ? '&' : '?
 
 const PAGES = [
   { route: '/', title: 'Ponlysis · On-chain drug design', h1: 'Computer-aided drug design, scored on chain.',
-    texts: ['Three things you can trust', 'Every docking test is paid, scored and reviewed', 'Four steps, one record', 'What the number means', 'What the contract checks before it believes a pose', 'Targets people are docking this week', 'The lab token launches on ponsfamily.com', '100 $PONLYSIS or 0.0001 ETH', 'Dock something today.', ...(TOKEN_LIVE ? ['Buy $PONLYSIS'] : ['Buy $PONLYSIS · soon']), 'CA posts here at launch', 'Docking tests', 'Reviews', 'In prize pools'],
+    texts: ['Three things you can trust', 'Every docking test is paid, scored and reviewed', 'Four steps, one record', 'What the number means', 'What the contract checks before it believes a pose', 'Targets people are docking this week', '$PONLYSIS is live on ponsfamily.com', '100 $PONLYSIS or 0.0001 ETH', 'Dock something today.', ...(TOKEN_LIVE ? ['Buy $PONLYSIS'] : ['Buy $PONLYSIS · soon']), 'On Robinhood Chain', 'Docking tests', 'Reviews', 'In prize pools'],
     ready: () => !!document.querySelector('[data-featured] .pc-card--link') && /^\d/.test(document.querySelector('[data-stat="targets"]').textContent.trim()),
     settle: 2500,
     extra: () => ({
@@ -445,7 +445,7 @@ export function invalidate() {}
           payment: document.querySelector('[data-payment-line]').textContent + ' ' + document.querySelector('[data-payment-token]').textContent,
           buy: document.querySelector('#payment [data-shell="buy"]').textContent.replace(/\s+/g, ' ').trim(),
         }));
-        return { ok: got.tests.length === 2 && /#3/.test(got.tests[0]) && /#1/.test(got.tests[1]) && got.testLinks.some((h) => h.startsWith('https://x.com/intent/post')) && got.testLinks.includes('/run?id=1') && got.best === 2 && got.received === 2 && got.receivedBold === 0 && got.written === 1 && /Prizes to claim · 0\.002 ETH/.test(got.prizes) && got.claim && /No sponsorships yet/.test(got.sponsorships) && /100 \$PONLYSIS or 0\.0001 ETH/.test(got.payment) && /after the \$PONLYSIS launch/.test(got.payment) && got.buy === (TOKEN_LIVE ? 'Buy $PONLYSIS' : 'Buy $PONLYSIS · soon'), detail: JSON.stringify(got).slice(0, 500) };
+        return { ok: got.tests.length === 2 && /#3/.test(got.tests[0]) && /#1/.test(got.tests[1]) && got.testLinks.some((h) => h.startsWith('https://x.com/intent/post')) && got.testLinks.includes('/run?id=1') && got.best === 2 && got.received === 2 && got.receivedBold === 0 && got.written === 1 && /Prizes to claim · 0\.002 ETH/.test(got.prizes) && got.claim && /No sponsorships yet/.test(got.sponsorships) && /100 \$PONLYSIS or 0\.0001 ETH/.test(got.payment) && /Paying in \$PONLYSIS is not open in the lab yet/.test(got.payment) && got.buy === (TOKEN_LIVE ? 'Buy $PONLYSIS' : 'Buy $PONLYSIS · soon'), detail: JSON.stringify(got).slice(0, 500) };
       });
       await tryCheck('H4: no console errors and no failed requests on the connected dashboard', async () => { const errs = t.errors(); return { ok: !errs.length, detail: errs.map((e) => `${e.kind} ${e.text.slice(0, 120)}`).join(' | ') }; });
       await t.shot('dashboard-live-1280.png');

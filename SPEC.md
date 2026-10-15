@@ -17,9 +17,10 @@ top-threat cancers.
 
 - Name **Ponlysis**, domain **ponlysis.bio**, X **https://x.com/ponlysis** (handle `ponlysis`).
 - Footer line on every page: `2026 Ponlysis Lab LLC`.
-- Token **$PONLYSIS**: launches later on ponsfamily.com. Until then `TOKEN.ca` and `TOKEN.buyUrl` are null: the Buy
-  link is inert and reads `Buy $PONLYSIS · soon`, Copy CA is disabled and reads `CA posts here at launch`. No page
-  may carry a `0x` address string in visible text while blank.
+- Token **$PONLYSIS**: live on ponsfamily.com since 2026-10-15. `TOKEN.ca` and `TOKEN.buyUrl` (its launchpad page)
+  are set in js/config.js, so Buy opens that page and Copy CA copies the CA. With both null the Buy link is inert and
+  reads `Buy $PONLYSIS · soon`, Copy CA is disabled and reads `CA posts here at launch`. No page may carry a `0x`
+  address string in visible text; the CA appears only inside the buy link.
 - Chain: Robinhood Chain 4663 (`0x1237`), ETH gas, official RPC `https://rpc.mainnet.chain.robinhood.com` plus
   `https://robinhood-rpc.publicnode.com` for wallets. Browser reads go through the same-origin proxy `/api/rpc`.
 - Explorer for transaction links: `https://robinhoodchain.blockscout.com/tx/<hash>`.

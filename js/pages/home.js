@@ -50,7 +50,7 @@ statusP.then((s) => {
     const price = s.value.token && s.value.runPrice !== undefined && s.value.runPrice !== null && BigInt(s.value.runPrice) > 0n ? F.units(s.value.runPrice, 18, 2) : null;
     if (fee || price) {
       const p = $('[data-price-line]');
-      p.textContent = `On chain now: a docking test costs ${price ? `${price} $${TOKEN.symbol}` : `$${TOKEN.symbol} after the launch`} or ${fee || '0.0001'} ETH.`;
+      p.textContent = `On chain now: a docking test costs ${price ? `${price} $${TOKEN.symbol} or ` : ''}${fee || '0.0001'} ETH.`;
       p.hidden = false;
     }
   } else {

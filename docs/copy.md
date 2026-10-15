@@ -77,12 +77,12 @@ weights from SPEC-ENGINE.md printed by the script, and a footnote `Divided by 1 
 
 ### Featured targets (H2 `Targets people are docking this week`, link `All targets`)
 
-### Token (eyebrow `$PONLYSIS`, H2 `The lab token launches on ponsfamily.com`)
+### Token (eyebrow `$PONLYSIS`, H2 `$PONLYSIS is live on ponsfamily.com`)
 
-- Body: `Ponlysis is an honorable project of ponsfamily.com, and $PONLYSIS launches there. Until then the buy link is inert and no contract address is published here. When the token is live this card shows the buy link and Copy CA. The lab can later ask for a minimum $PONLYSIS balance to record a run; if that is switched on, the lab page says so.`
-- Inert buy pill (exact): `Buy $PONLYSIS · soon`
-- Disabled Copy CA (exact): `CA posts here at launch`
-- Live buy pill (exact, after launch): `Buy $PONLYSIS`
+- Body: `Ponlysis is an honorable project of ponsfamily.com, and $PONLYSIS launched on its launchpad. The buy link opens the coin's page there, and Copy CA copies its contract address.`
+- Caption beside Copy CA (exact): `On Robinhood Chain`
+- Live buy pill (exact): `Buy $PONLYSIS`, opening TOKEN.buyUrl in a new tab
+- Blank state, only while TOKEN.ca and TOKEN.buyUrl are null: inert pill `Buy $PONLYSIS · soon`, disabled Copy CA `CA posts here at launch`
 - Live copy button: `Copy CA` · toast (exact): `$PONLYSIS CA copied`
 - Requirement line (only when set): `Recording a run needs at least {minHold} $PONLYSIS in the connected wallet.`
 
@@ -367,8 +367,8 @@ and the chain, never typed by hand.
 - Step 03 (replaces `Record`): H4 `Test` · `Connect a wallet and pay the test, 100 $PONLYSIS or 0.0001 ETH. The contract checks the geometry, re-scores the pose and stores it.`
 - Step 04 (replaces `Settle`): H4 `Review and settle` · `Other wallets review the test. When the epoch ends, anyone can settle: the best score takes the sponsored pool. The report updates.`
 - Stat strip (five cells): `Targets` · `Ligands` · `Docking tests` · `Reviews` · `In prize pools`
-- Token card body (replaces the v1 body): `Ponlysis is an honorable project of ponsfamily.com, and $PONLYSIS launches there. Until then the buy link is inert and no contract address is published here. When the token is live this card shows the buy link and Copy CA.` then `Every docking test costs 100 $PONLYSIS or 0.0001 ETH, paid to the lab treasury. The payer chooses. While $PONLYSIS is not launched only the ETH option works, and the token option in the lab reads after the $PONLYSIS launch.`
-- Price line (only when the chain is live): `On chain now: a docking test costs {price} $PONLYSIS or {fee} ETH.` (`$PONLYSIS after the launch` in place of the price while the token is unset)
+- Token card body (since the launch, 2026-10-15): `Ponlysis is an honorable project of ponsfamily.com, and $PONLYSIS launched on its launchpad. The buy link opens the coin's page there, and Copy CA copies its contract address.` then `Every docking test costs 100 $PONLYSIS or 0.0001 ETH, paid to the lab treasury. Paying in $PONLYSIS is not open in the lab yet, so for now every test is paid in ETH.`
+- Price line (only when the chain is live): `On chain now: a docking test costs {price} $PONLYSIS or {fee} ETH.` (without the `{price} $PONLYSIS or` part while the lab's token option is closed)
 - The v1 requirement line (`Recording a run needs at least {minHold} $PONLYSIS ...`) is retired: minHold is gone.
 
 ### Direct links (9.4)
@@ -406,7 +406,7 @@ and the chain, never typed by hand.
 - Section pills and H2s: `My docking tests` · `Best scores` (line `Your best test on each target, lowest binding free energy first.`) · `Reviews received` · `Reviews written` · `Prizes and withdraw` · `Sponsorships` · `Payment`
 - Tests table columns: `Test` · `Target` · `Ligand` · `dG (kcal/mol)` · `Band` · `Reviews` · `Actions` (`Post on X` · `Report`)
 - Prizes: `Prizes to claim · {amount} ETH` + `Claim` · `Prizes won so far · {amount} ETH` · badge `settled` / `Claimed` · win rows `{target} · epoch {n} · {amount} ETH`
-- Payment: `Every docking test costs {price} $PONLYSIS or {fee} ETH, paid to the lab treasury. The payer chooses in the lab.` · `While $PONLYSIS is not launched only the ETH option works, and the token option reads after the $PONLYSIS launch.` · after the launch `Both options are open: {price} $PONLYSIS from the connected wallet, or {fee} ETH with the transaction.` · `Prize pools are funded by sponsors only. A settled epoch pays the best wallet on that target, minus the lab fee.` · the blank token controls (`Buy $PONLYSIS · soon`, `Copy CA`, `CA posts here at launch`)
+- Payment: `Every docking test costs {price} $PONLYSIS or {fee} ETH, paid to the lab treasury.` · `Paying in $PONLYSIS is not open in the lab yet, so for now every test is paid in ETH.` · once the lab takes $PONLYSIS `Both options are open: {price} $PONLYSIS from the connected wallet, or {fee} ETH with the transaction.` · `Prize pools are funded by sponsors only. A settled epoch pays the best wallet on that target, minus the lab fee.` · the token controls (`Buy $PONLYSIS`, `Copy CA`, `On Robinhood Chain`)
 - Levels: `Observer` 0 · `Assistant` 50 · `Researcher` 150 · `Senior Researcher` 400 · `Principal Investigator` 900 · `Lab Head` 2000
 - Badges (name · rule): `First test` · `Ten tests` · `Fifty tests` · `Ten targets` · `Strong binder` · `Best on a target` · `Epoch winner` · `Sponsor` · `Reviewer` · `Well reviewed` (rules as js/gamify.js prints them)
 - /wallet forwarder: H1 `Your lab record moved to the Dashboard` · `Level, XP and badges, docking tests, reviews, prizes and sponsorships now live at /dashboard. This page forwards there in a moment.` · button `Open the dashboard`
