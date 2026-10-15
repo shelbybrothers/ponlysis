@@ -74,7 +74,6 @@ export const ANALYSIS = FN('Analysis');
 export const FUNDED = FN('Funded');
 export const SETTLED = FN('Settled');
 export const ROLLED = FN('Rolled');
-const ALL_TOPICS = [RUN_SCORED, PAID, METHOD, REVIEWED, ANALYSIS, FUNDED, SETTLED, ROLLED].map((f) => f.topic);
 
 const hexNum = (h) => (h === null || h === undefined ? null : Number(BigInt(h)));
 const word = (n) => '0x' + BigInt(n).toString(16).padStart(64, '0');
@@ -250,6 +249,7 @@ export function decodeRolledLog(log) {
 // eth_getLogs, chunked and halved when the node refuses a span
 
 const TOO_MANY = /more than|too many|too large|exceed|response size|block range|limit|query timeout|timeout/i;
+const ALLOWED = /only (\d+) (?:blocks )?are allowed/i; // the Robinhood node names the span it takes
 
 export async function getLogsChunked({ address, topics, fromBlock, toBlock, signal, chunk = CHAIN.logsChunk || 10_000_000 }) {
   const out = [];
@@ -262,7 +262,14 @@ export async function getLogsChunked({ address, topics, fromBlock, toBlock, sign
       for (const l of logs || []) out.push(l);
     } catch (e) {
       if (e && e.name === 'AbortError') throw e;
-      if (to > from && TOO_MANY.test(String((e && e.message) || ''))) {
+      const message = String((e && e.message) || '');
+      if (to > from && TOO_MANY.test(message)) {
+        // walk the span the node says it allows, else halve until it answers
+        const allowed = Number((ALLOWED.exec(message) || [])[1]) || 0;
+        if (allowed >= 1 && allowed < to - from + 1) {
+          for (let a = from; a <= to; a += allowed) await one(a, Math.min(to, a + allowed - 1));
+          return;
+        }
         const mid = from + Math.floor((to - from) / 2);
         await one(from, mid);
         await one(mid + 1, to);
@@ -328,9 +335,11 @@ export class LogIndex {
     let from = this.synced + 1;
     while (from <= head) {
       const to = Math.min(head, from + span - 1);
+      // Every log of the lab, no topic filter: the Robinhood node takes 10M blocks per eth_getLogs, but only 100k
+      // when a topic position lists several values, which made a cold sync hundreds of calls long (a 502 on the
+      // first /api/runs). ingest() keeps the eight events it knows and skips the rest (OwnershipTransferred, ...).
       const logs = await getLogsChunked({
         address: this.address,
-        topics: [ALL_TOPICS],
         fromBlock: from,
         toBlock: to,
         signal,

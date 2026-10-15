@@ -21,7 +21,7 @@ export const CHAIN = Object.freeze({
   explorer: 'https://robinhoodchain.blockscout.com',
   nativeCurrency: Object.freeze({ name: 'Ether', symbol: 'ETH', decimals: 18 }),
   maxBatch: 5, // the node refuses bigger JSON-RPC batches
-  logsChunk: 10_000_000, // eth_getLogs block span per request
+  logsChunk: 10_000_000, // eth_getLogs block span per request (the node allows 100k when a topic lists several values)
 });
 
 /* Explorer links for things a page MAY show: transaction hashes and the visitor's own wallet. Never the lab. */

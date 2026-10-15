@@ -668,6 +668,8 @@ class FakeChain {
     this.targetCount = 3; this.ligandCount = 2; this.runFee = RUN_FEE; this.runPrice = RUN_PRICE; this.feeBps = 500; this.genesis = 1_700_000_000; this.epochLength = 604800; this.epoch = 4;
     this.token = '0x0000000000000000000000000000000000000000'; this.ethAllowed = true; this.tokenAllowed = false;
     this.maxSpan = Infinity; // eth_getLogs spans above this are refused like a public node does
+    this.listSpan = Infinity; // and above this when a topic position lists several values, like the Robinhood node (100k)
+    this.other = []; // lab logs of events the index does not read (OwnershipTransferred, ...)
     this.calls = []; // every method seen
     this.getLogsSpans = [];
     this.views = new Map(lab.LAB_FRAGMENTS.filter((f) => f.startsWith('function ')).map((f) => { const p = lab.labFragment(f.slice(9, f.indexOf('('))); return [p.selector, p]; }));
@@ -683,6 +685,7 @@ class FakeChain {
       ...this.funded.map((f, i) => fundedLog(f, i)),
       ...this.settled.map((s, i) => settledLog(s, i)),
       ...this.rolled.map((s, i) => rolledLog(s, i)),
+      ...this.other,
     ];
   }
   best(list) { return list.reduce((b, r) => (!b || r.scoreMilli < b.scoreMilli || (r.scoreMilli === b.scoreMilli && r.id < b.id) ? r : b), null); }
@@ -759,8 +762,9 @@ class FakeChain {
         const from = Number(BigInt(f.fromBlock)); const to = f.toBlock === 'latest' ? this.head : Number(BigInt(f.toBlock));
         this.getLogsSpans.push([from, to]);
         if (to - from + 1 > this.maxSpan) return err(-32005, 'query returned more than 10000 results');
-        if (f.address && String(f.address).toLowerCase() !== FAKE_LAB.toLowerCase()) return ok([]);
         const topics = f.topics || [];
+        if (to - from + 1 > this.listSpan && topics.some((t) => Array.isArray(t) && t.length > 1)) return err(-32602, `query spans ${to - from + 1} blocks (${from} to ${to}), but only ${this.listSpan} are allowed for this request; narrow the block range, or send one value per position`);
+        if (f.address && String(f.address).toLowerCase() !== FAKE_LAB.toLowerCase()) return ok([]);
         const match = (log) => topics.every((t, i) => t === null || t === undefined || (Array.isArray(t) ? t.map((x) => x.toLowerCase()).includes(log.topics[i]) : String(t).toLowerCase() === log.topics[i]));
         const hits = this.logs().filter((l) => { const b = Number(BigInt(l.blockNumber)); return b >= from && b <= to && match(l); });
         return ok(hits.sort((a, b) => (Number(BigInt(a.blockNumber)) - Number(BigInt(b.blockNumber))) || (Number(BigInt(a.logIndex)) - Number(BigInt(b.logIndex)))));
@@ -774,8 +778,14 @@ class FakeChain {
 }
 
 let fake = null;
+let apiNotLive = false; // answer GET {BASE}/api/runs the way a server without a lab does, whatever the dev server reads
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (input, init) => {
+  if (apiNotLive && String(input).startsWith(`${BASE}/api/runs`)) {
+    const one = new URL(String(input)).searchParams.has('id');
+    const body = one ? { ok: false, live: false, error: 'no-run', message: chain.NOT_LIVE } : { ok: true, live: false, reason: chain.NOT_LIVE, runs: [], total: 0, head: null };
+    return new Response(JSON.stringify(body), { status: one ? 404 : 200, headers: { 'content-type': 'application/json' } });
+  }
   if (String(input) === FAKE_RPC && fake) {
     const body = JSON.parse(init.body);
     const answer = Array.isArray(body) ? body.map((r) => fake.handle(r)) : fake.handle(body);
@@ -848,6 +858,25 @@ if (group('fake chain: js/chain.js live paths')) {
     assert.ok(fake.getLogsSpans.some(([a, b]) => a === 0 && b === 49), 'the first chunk was asked whole first');
     fake.maxSpan = Infinity;
   });
+  await check('getLogsChunked walks the span the node names ("only 30 are allowed") instead of halving', async () => {
+    fake.listSpan = 30; fake.getLogsSpans = [];
+    const topics = [[chain.RUN_SCORED.topic, chain.PAID.topic]];
+    const logs = await chain.getLogsChunked({ address: FAKE_LAB, topics, fromBlock: 0, toBlock: 140, chunk: 50 });
+    eq(logs.length, 12);
+    eq(fake.getLogsSpans, [[0, 49], [0, 29], [30, 49], [50, 99], [50, 79], [80, 99], [100, 140], [100, 129], [130, 140]]);
+    fake.listSpan = Infinity;
+  });
+  await check('a cold LogIndex asks for every lab log with no topic list (one span, not the 100k of a list) and skips events it does not read', async () => {
+    const OWNERSHIP = '0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0';
+    fake.other = [{ address: FAKE_LAB.toLowerCase(), topics: [OWNERSHIP, word(0), word(1)], data: '0x', blockNumber: toHex(1), transactionHash: txHash('o0'), logIndex: '0x0' }];
+    fake.listSpan = 100; fake.getLogsSpans = [];
+    const idx = new chain.LogIndex({ address: FAKE_LAB });
+    await idx.sync();
+    eq(fake.getLogsSpans, [[0, 140]]);
+    eq([idx.head, idx.runs.map((r) => r.id), idx.funded.length, idx.settled.length, idx.rolled.length, idx.reviews.size, idx.analyses.size], [140, [1, 2, 3, 4, 5, 6], 3, 1, 1, 3, 1]);
+    eq([idx.runs[5].payment.method, idx.runs[5].reviews.count], ['token', 1]);
+    fake.other = []; fake.listSpan = Infinity;
+  });
   await check('allRuns and bests over the whole list (not partial)', async () => {
     chain.invalidate();
     const all = await chain.allRuns();
@@ -903,11 +932,16 @@ if (group('fake chain: js/chain.js live paths')) {
   await check('runs via the API first: a not-live answer from the server falls back to the logs', async () => {
     chain.setRunsSource('api');
     chain.invalidate();
-    let p;
-    try { p = await chain.runsPage({ limit: 1 }); } catch (e) { throw new Error(`runsPage: ${e.message}`); }
-    eq(p.source, 'logs'); eq(p.total, 6);
-    eq((await chain.runById(3)).method, METHOD_REPRO, 'runById falls back to the logs too');
-    chain.setRunsSource('logs');
+    apiNotLive = true;
+    try {
+      let p;
+      try { p = await chain.runsPage({ limit: 1 }); } catch (e) { throw new Error(`runsPage: ${e.message}`); }
+      eq(p.source, 'logs'); eq(p.total, 6);
+      eq((await chain.runById(3)).method, METHOD_REPRO, 'runById falls back to the logs too');
+    } finally {
+      apiNotLive = false;
+      chain.setRunsSource('logs');
+    }
   });
   await check('labStatus reports the chain unreachable when the node fails, and recovers', async () => {
     const h = fake.handle.bind(fake);
@@ -1314,13 +1348,23 @@ if (group(`server ${BASE}: js/catalog.js and js/chain.js from Node with configur
       }
       eq(await catalog.loadRegistry({ fresh: true }).then((r) => r === null || typeof r === 'object'), true);
     });
-    await check('js/chain.js against the server: not live unless the server is; runs() answers a list; ledger empty', async () => {
+    await check('js/chain.js against the server: not live unless LAB.address is set; runs() answers a list; the ledger and the report follow', async () => {
       const s = await chain.labStatus({ fresh: true });
-      eq(s.live, false, 'LAB.address is null in js/config.js, so chain.js reads nothing');
-      eq(await chain.runs(), []);
-      eq((await chain.ledger()).runs, []);
+      const list = await chain.runs();
+      const ledger = await chain.ledger();
       const rep = await chain.report();
-      eq([rep.live, rep.runCount, rep.cancers.length, rep.mostReviewed], [false, 0, 20, []]);
+      if (!LAB.address) {
+        eq(s.live, false, 'LAB.address is null in js/config.js, so chain.js reads nothing');
+        eq(list, []);
+        eq(ledger.runs, []);
+        eq([rep.live, rep.runCount, rep.cancers.length, rep.mostReviewed], [false, 0, 20, []]);
+      } else {
+        eq(s.live, true, 'LAB.address is set in js/config.js: chain.js reads that lab through the server');
+        assert.ok(Array.isArray(list) && list.every((r) => Number.isInteger(r.id) && r.id >= 1), 'runs() answers runs');
+        assert.ok(ledger.live && ledger.runs.length >= list.length, `ledger ${ledger.runs.length} runs, runs() ${list.length}`);
+        eq([rep.live, rep.cancers.length], [true, 20]);
+        assert.ok(Number.isInteger(rep.runCount) && rep.runCount <= ledger.runs.length, `report ${rep.runCount} runs, ledger ${ledger.runs.length}`);
+      }
       assert.ok(rep.targetCount === cat.targets.length);
     });
     if (serverLive && local && (local.lab || local.contract || local.address)) {
