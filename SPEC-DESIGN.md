@@ -235,7 +235,7 @@ Breakpoints: 360 (floor, everything must work), 480, 768, 1024, 1280, 1440 (max 
 
 - Section with `.grid-paper`, padding `--section-y` top, `--s-10` bottom.
 - 1280: two columns `7fr 5fr`, gap `--s-9`, items centered vertically.
-  - Left: eyebrow (mono) `PONS LAB CADD · ROBINHOOD CHAIN`; H1 `--t-hero`; lede `--t-lede` (max 52ch); CTA row
+  - Left: eyebrow (mono) `PONLYSIS LAB · ROBINHOOD CHAIN`; H1 `--t-hero`; lede `--t-lede` (max 52ch); CTA row
     (`Open the lab` primary ink 52 px, `How it works` outline 52 px), then a caption line in mono 13 px `--ink-3`
     with the structure currently shown: `In the viewer: 4HJO · EGFR kinase domain with erlotinib · 2.75 A · X-ray`
     plus an RCSB outbound link. The caption text is generated from the catalog entry, never typed.
@@ -602,7 +602,7 @@ primary and `Home` outline. Footer present.
   may point to PNG renders of it at 192 and 512 (rendered by the plumbing author from this file).
 - `wordmark.svg`: mark + `Ponlysis` in Anybody 700 34 px with a text fallback stack. Inline it in the nav so the
   webfont applies; when used as an `<img>` the fallback renders in Helvetica or Arial, which is acceptable.
-- `og-card.svg`: 1200 x 630, paper, grid, eyebrow `PONS LAB CADD`, `Ponlysis` at 140 px, three lines of lede, the
+- `og-card.svg`: 1200 x 630, paper, grid, eyebrow `PONLYSIS LAB`, `Ponlysis` at 140 px, three lines of lede, the
   test tube (`mark.png`, 350 px) on the right, footer row `ponlysis.bio` and `structures from the RCSB Protein Data Bank`. Social
   crawlers do not accept SVG for `og:image`, so `img/brand/og-card.png` (1200 x 630, rendered from the SVG with
   the self-hosted fonts by headless Chrome this session) is the file `og:image` points at. The SVG is the source

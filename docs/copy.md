@@ -17,7 +17,7 @@ We say "estimated", "computational", "a lead for further study". We never say "A
 
 ### Hero
 
-- Eyebrow: `Pons Lab CADD · Robinhood Chain`
+- Eyebrow: `Ponlysis Lab · Robinhood Chain`
 - H1: `Computer-aided drug design, scored on chain.`
 - H2 (lede): `Pick a cancer target from the Protein Data Bank. Pick a bioactive plant compound. Dock it in your browser. Robinhood Chain re-checks the pose, re-scores it and keeps the record. The best binders feed a live cancer research report.`
 - Primary CTA: `Open the lab`

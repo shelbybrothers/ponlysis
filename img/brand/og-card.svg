@@ -13,7 +13,7 @@
   <rect width="1200" height="630" fill="url(#gridMajor)"/>
   <image href="mark.png" x="850" y="92" width="350" height="350"/>
   <g font-family="'Space Mono', Menlo, Consolas, monospace" fill="#3B4250" font-size="22" letter-spacing="2">
-    <text x="88" y="118">PONS LAB CADD</text>
+    <text x="88" y="118">PONLYSIS LAB</text>
   </g>
   <g font-family="Anybody, 'Albert Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="700" fill="#14181F">
     <text x="84" y="250" font-size="140" letter-spacing="-5">Ponlysis</text>
