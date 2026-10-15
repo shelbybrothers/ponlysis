@@ -80,7 +80,7 @@ shared module is absent; the two agree on the SPEC 9.5 rules, checked on a hand 
   `placeholder` (input `placeholder=""` attributes are not visible text and are dropped first); regex literals in js and
   mjs are dropped before the dashes and emoji gates (api/_llm.mjs strips dashes and emoji from model output with them);
   the content gate carries the v2 strings of every page; the browser X-link gate reads `BRAND.x`
-  (https://x.com/PonlysisBio) and the logo gate accepts the PNG mark the partials use.
+  (https://x.com/ponlysis) and the logo gate accepts the PNG mark the partials use.
 - `node tools/verify.mjs http://127.0.0.1:6131` (CHROME_PORT=9540): every route including `/run?id=1`, `/dashboard`,
   `/wallet` at 360/390/430/768/1024/1280/1440.
 - `node tools/pages-test.mjs --base http://127.0.0.1:6131` (CHROME_PORT=9540): 395 checks; `/run?id=1` shows the

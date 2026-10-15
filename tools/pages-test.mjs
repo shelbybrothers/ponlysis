@@ -70,7 +70,7 @@ process.on('exit', () => { if (server) try { server.kill('SIGKILL'); } catch { /
 // ---------------------------------------------------------------------------------------------------------
 // what each page must show (strings from docs/copy.md)
 
-const FOOTER = '2026 Pons Lab CADD (Computer-aided Drug Design)';
+const FOOTER = '2026 Ponlysis Lab LLC';
 const suffix = withChain ? `rpc=${encodeURIComponent(RPC)}&contract=${encodeURIComponent(CONTRACT)}` : '';
 const withQuery = (route) => (suffix ? `${route}${route.includes('?') ? '&' : '?'}${suffix}` : route);
 

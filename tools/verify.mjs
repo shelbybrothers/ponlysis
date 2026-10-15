@@ -24,7 +24,7 @@
  *   Links to /api/<name>[.ext] resolve when api/<name>.js exists (a route, not a file).
  * Browser gates (real headless Chrome, each page at 360, 390, 430, 768, 1024, 1280, 1440):
  *   status, no horizontal overflow, no console error, no failed request, the brand mark loads (svg or png), the footer line,
- *   the X link (BRAND.x, https://x.com/PonlysisBio), the blank $PONLYSIS state (or the live one: Copy CA copies TOKEN.ca and says so), no visible
+ *   the X link (BRAND.x, https://x.com/ponlysis), the blank $PONLYSIS state (or the live one: Copy CA copies TOKEN.ca and says so), no visible
  *   0x address, every <title> starts with "Ponlysis · ", exactly one visible h1, the page's key heading rendered,
  *   the nav collapsed to its toggle under 900 px. A 404 for a file another builder has not shipped yet (the
  *   OPTIONAL list below, checked against the disk) is noted, not failed, until the file exists.

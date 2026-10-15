@@ -35,10 +35,10 @@ export const BRAND = Object.freeze({
   name: 'Ponlysis',
   domain: 'ponlysis.bio',
   url: 'https://ponlysis.bio',
-  x: 'https://x.com/PonlysisBio',
-  xHandle: 'PonlysisBio',
+  x: 'https://x.com/ponlysis',
+  xHandle: 'ponlysis',
   tagline: 'Computer-aided drug design, scored on chain.',
-  footer: '2026 Pons Lab CADD (Computer-aided Drug Design)',
+  footer: '2026 Ponlysis Lab LLC',
 });
 
 // $PONLYSIS launches later on ponsfamily.com. Until then ca and buyUrl are null: the Buy link is inert and reads

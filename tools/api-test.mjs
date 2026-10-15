@@ -324,7 +324,7 @@ if (group('pure: selection, bests, report')) {
     assert.ok(md.includes('| 2 | EGFR (1M17) | Curcumin | -6.446 | 2 | 4.5 | [Test #2](https://ponlysis.bio/run?id=2) |'));
     assert.ok(md.includes('## Method\n\nBinding free energy, written dG,'));
     assert.ok(md.includes('These are computational estimates. They rank candidates for further study.'));
-    assert.ok(md.trim().endsWith('2026 Pons Lab CADD (Computer-aided Drug Design), compiled from Robinhood Chain'));
+    assert.ok(md.trim().endsWith('2026 Ponlysis Lab LLC, compiled from Robinhood Chain'));
     assert.ok(!DASH.test(md), 'a dash slipped into the Markdown');
     assert.ok(!EMOJI.test(md), 'an emoji slipped into the Markdown');
     assert.ok(!BANNED.test(md), 'a banned word slipped into the Markdown');

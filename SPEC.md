@@ -8,15 +8,15 @@ chain, and the site compiles it into a live cancer research report. Nothing on t
 the ligand topologies, the scorer and the prize pools are on mainnet (Robinhood Chain, id 4663).
 
 Owner intent, verbatim priorities: 100% mainnet use case live (no demo, no larp); science theme; decent, proper,
-mobile view; X page x.com/PonlysisBio; footer "2026 Pons Lab CADD (Computer-aided Drug Design)"; $PONLYSIS buy link and
+mobile view; X page x.com/ponlysis; footer "2026 Ponlysis Lab LLC"; $PONLYSIS buy link and
 Copy CA blank until the launch on ponsfamily.com; connect wallet; ~100 ligands and ~100 receptors from RCSB; collect
 the best Gibbs energy and potency; goal: help the research report and find the best cancer drug candidates for the
 top-threat cancers.
 
 ## 1. Identity
 
-- Name **Ponlysis**, domain **ponlysis.bio**, X **https://x.com/PonlysisBio** (handle `ponlysis`).
-- Footer line on every page: `2026 Pons Lab CADD (Computer-aided Drug Design)`.
+- Name **Ponlysis**, domain **ponlysis.bio**, X **https://x.com/ponlysis** (handle `ponlysis`).
+- Footer line on every page: `2026 Ponlysis Lab LLC`.
 - Token **$PONLYSIS**: launches later on ponsfamily.com. Until then `TOKEN.ca` and `TOKEN.buyUrl` are null: the Buy
   link is inert and reads `Buy $PONLYSIS · soon`, Copy CA is disabled and reads `CA posts here at launch`. No page
   may carry a `0x` address string in visible text while blank.

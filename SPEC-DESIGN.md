@@ -387,8 +387,8 @@ Print (`@media print`):
 - Tables: full borders 0.5 pt, header repeated (`thead { display: table-header-group }`), zebra off.
 - Links: colour black, underline; outbound links print their URL after the text (`a[href^="http"]::after { content:
   " (" attr(href) ")" }`) at 8.5 pt. Transaction links print the full hash.
-- Running header via a fixed element at top: `Ponlysis · Cancer research report · <date>`; footer `2026 Pons Lab
-  CADD (Computer-aided Drug Design) · compiled from Robinhood Chain`.
+- Running header via a fixed element at top: `Ponlysis · Cancer research report · <date>`; footer `2026 Ponlysis Lab LLC ·
+  compiled from Robinhood Chain`.
 
 ### 5.9 Empty states
 
@@ -458,8 +458,8 @@ to /wallet with a hash), a hairline, `Disconnect` in `--bad`. Rows 44 px. Escape
 
 `--dark` surface, `--paper` text, padding `--section-y`. 1280: four columns: brand (mono mark in `--paper`, one
 sentence), `Lab` links, `Data` links (RCSB Protein Data Bank outbound, Robinhood Chain explorer outbound, `/docs`
-API), `Community` (X `@PonlysisBio` outbound, `ponsfamily.com` outbound). Bottom row after a `rgba(255,255,255,0.14)`
-rule: left `2026 Pons Lab CADD (Computer-aided Drug Design)` 14 px, right `Structures from the RCSB Protein Data
+API), `Community` (X `@ponlysis` outbound, `ponsfamily.com` outbound). Bottom row after a `rgba(255,255,255,0.14)`
+rule: left `2026 Ponlysis Lab LLC` 14 px, right `Structures from the RCSB Protein Data
 Bank` 13 px `--muted-on-dark`. 390: columns stack, bottom row stacks left-aligned. The footer line is exact and
 appears on every page including 404.
 

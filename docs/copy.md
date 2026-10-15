@@ -164,7 +164,7 @@ weights from SPEC-ENGINE.md printed by the script, and a footnote `Divided by 1 
 - Actions: `Download Markdown` · `Print`
 - Group section: H2 `{group}` · eyebrow `BEST PAIR` · table caption `Top ten pairs by binding free energy` · footnote `{runs} runs · {wallets} wallets · {targets} targets in this group`
 - Jump select label: `Jump to`
-- Print header: `Ponlysis · Cancer research report · {date}` · print footer: `2026 Pons Lab CADD (Computer-aided Drug Design) · compiled from Robinhood Chain`
+- Print header: `Ponlysis · Cancer research report · {date}` · print footer: `2026 Ponlysis Lab LLC · compiled from Robinhood Chain`
 - Markdown export header line: `Ponlysis cancer research report, compiled from Robinhood Chain at block {block} on {date}. Estimates from computational screening with a Vina-style scoring function. Not clinical results.`
 
 ## 7. Wallet (`/wallet`)
@@ -322,10 +322,10 @@ Contents: `How it works` · `Scoring explained` · `What the chain checks` · `W
 
 ## 14. Footer
 
-- Line (exact, every page): `2026 Pons Lab CADD (Computer-aided Drug Design)`
+- Line (exact, every page): `2026 Ponlysis Lab LLC`
 - Right: `Structures from the RCSB Protein Data Bank`
 - Brand sentence: `On-chain computer-aided drug design. An honorable project of ponsfamily.com.`
-- Columns: `Lab` (`Lab`, `Targets`, `Ligands`, `Leaderboard`, `Report`, `Wallet`) · `Data` (`RCSB Protein Data Bank`, `Robinhood Chain explorer`, `API`) · `Community` (`X @PonlysisBio`, `ponsfamily.com`, `Docs`)
+- Columns: `Lab` (`Lab`, `Targets`, `Ligands`, `Leaderboard`, `Report`, `Wallet`) · `Data` (`RCSB Protein Data Bank`, `Robinhood Chain explorer`, `API`) · `Community` (`X @ponlysis`, `ponsfamily.com`, `Docs`)
 
 ## 15. Meta: titles and descriptions
 
@@ -345,7 +345,7 @@ Contents: `How it works` · `Scoring explained` · `What the chain checks` · `W
 
 Open Graph: `og:site_name` `Ponlysis`, `og:title` equals the page title, `og:description` equals the meta
 description, `og:image` the rendered card at `/img/brand/og-card.png`, `twitter:card` `summary_large_image`,
-`twitter:site` `@PonlysisBio`.
+`twitter:site` `@ponlysis`.
 
 ---
 

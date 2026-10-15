@@ -52,4 +52,4 @@ Deploys the committed HEAD to the Vercel project `ponlysis` from a `git archive`
 The coin launches later on ponsfamily.com. `TOKEN.ca` and `TOKEN.buyUrl` in `js/config.js` are null until then: the
 Buy control reads `Buy $PONLYSIS · soon` and Copy CA is disabled. Set both, run `node tools/shell.mjs`, commit, ship.
 
-X: https://x.com/PonlysisBio
+X: https://x.com/ponlysis
