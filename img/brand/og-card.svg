@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Ponlysis: on-chain computer-aided drug design">
+  <title>Ponlysis</title>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#14181F" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+    <pattern id="gridMajor" width="200" height="200" patternUnits="userSpaceOnUse">
+      <path d="M200 0H0V200" fill="none" stroke="#14181F" stroke-opacity="0.14" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#F5F3EC"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#gridMajor)"/>
+  <image href="mark.png" x="850" y="92" width="350" height="350"/>
+  <g font-family="'Space Mono', Menlo, Consolas, monospace" fill="#3B4250" font-size="22" letter-spacing="2">
+    <text x="88" y="118">PONS LAB CADD</text>
+  </g>
+  <g font-family="Anybody, 'Albert Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="700" fill="#14181F">
+    <text x="84" y="250" font-size="140" letter-spacing="-5">Ponlysis</text>
+  </g>
+  <g font-family="'Albert Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#14181F" font-size="36" font-weight="500">
+    <text x="88" y="326">On-chain computer-aided drug design.</text>
+    <text x="88" y="378">Dock plant compounds into cancer targets.</text>
+    <text x="88" y="430">Robinhood Chain scores every pose.</text>
+  </g>
+  <line x1="88" y1="500" x2="1112" y2="500" stroke="#14181F" stroke-opacity="0.25" stroke-width="2"/>
+  <g font-family="'Space Mono', Menlo, Consolas, monospace" font-size="24" fill="#3B4250">
+    <text x="88" y="552">ponlysis.bio</text>
+    <text x="1112" y="552" text-anchor="end">structures from the RCSB Protein Data Bank</text>
+  </g>
+</svg>
