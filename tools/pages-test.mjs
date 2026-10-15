@@ -21,7 +21,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { launchChrome, openPage, sleep } from './lib/cdp.mjs';
-import { LAB } from '../js/config.js';
+import { LAB, TOKEN } from '../js/config.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -37,6 +37,9 @@ const SHOTS = path.join(ROOT, '.tmp', 'shots');
 fs.mkdirSync(SHOTS, { recursive: true });
 
 const exists = (f) => fs.existsSync(path.join(ROOT, f));
+// the coin is live once js/config.js carries both its CA and its launchpad page (as tools/verify.mjs reads it): the Buy link
+// then points there and Copy CA works; until then Buy is inert and reads 'Buy $PONLYSIS · soon' and Copy CA is disabled
+const TOKEN_LIVE = !!(TOKEN.ca && TOKEN.buyUrl);
 // modules the pages import that other builders may not have shipped yet: a 404 for one of these is tolerated while
 // the file is absent on disk, and named in the report
 const OPTIONAL = ['js/catalog.js', 'js/chain.js', 'js/lab.js', 'js/viewer.js', 'js/engine/derived.js', 'js/engine/score.js', 'js/engine/index.js', 'js/engine/method.js', 'js/gamify.js', 'data/registry.json', 'api/report.js', 'api/runs.js', 'api/status.js', 'api/analyze.js',
@@ -79,7 +82,7 @@ const withQuery = (route) => (suffix ? `${route}${route.includes('?') ? '&' : '?
 
 const PAGES = [
   { route: '/', title: 'Ponlysis · On-chain drug design', h1: 'Computer-aided drug design, scored on chain.',
-    texts: ['Three things you can trust', 'Every docking test is paid, scored and reviewed', 'Four steps, one record', 'What the number means', 'What the contract checks before it believes a pose', 'Targets people are docking this week', 'The lab token launches on ponsfamily.com', '100 $PONLYSIS or 0.0001 ETH', 'Dock something today.', 'Buy $PONLYSIS · soon', 'CA posts here at launch', 'Docking tests', 'Reviews', 'In prize pools'],
+    texts: ['Three things you can trust', 'Every docking test is paid, scored and reviewed', 'Four steps, one record', 'What the number means', 'What the contract checks before it believes a pose', 'Targets people are docking this week', 'The lab token launches on ponsfamily.com', '100 $PONLYSIS or 0.0001 ETH', 'Dock something today.', ...(TOKEN_LIVE ? ['Buy $PONLYSIS'] : ['Buy $PONLYSIS · soon']), 'CA posts here at launch', 'Docking tests', 'Reviews', 'In prize pools'],
     ready: () => !!document.querySelector('[data-featured] .pc-card--link') && /^\d/.test(document.querySelector('[data-stat="targets"]').textContent.trim()),
     settle: 2500,
     extra: () => ({
@@ -182,6 +185,9 @@ try {
         text: document.body.textContent.replace(/\s+/g, ' '),
         footer: (document.querySelector('footer') || {}).textContent || '',
         buy: (document.querySelector('[data-shell="buy"]') || {}).textContent || '',
+        buyHref: document.querySelector('[data-shell="buy"]') ? document.querySelector('[data-shell="buy"]').getAttribute('href') : null,
+        buyTarget: document.querySelector('[data-shell="buy"]') ? document.querySelector('[data-shell="buy"]').getAttribute('target') : null,
+        buyRel: document.querySelector('[data-shell="buy"]') ? document.querySelector('[data-shell="buy"]').getAttribute('rel') : null,
         ca: document.querySelector('[data-shell="ca"]') ? document.querySelector('[data-shell="ca"]').disabled : null,
         navToggleVisible: !!document.querySelector('[data-nav-toggle]') && getComputedStyle(document.querySelector('[data-nav-toggle]')).display !== 'none',
         linksVisible: !!document.querySelector('.pc-nav-links') && getComputedStyle(document.querySelector('.pc-nav-links')).display !== 'none',
@@ -197,7 +203,9 @@ try {
       const missing = p.texts.filter((t) => !got.text.includes(t));
       check(`${tag}: copy deck strings`, !missing.length, `missing ${JSON.stringify(missing)}`);
       check(`${tag}: footer line`, got.footer.includes(FOOTER));
-      check(`${tag}: blank token state`, got.buy.replace(/\s+/g, ' ').trim() === 'Buy $PONLYSIS · soon' && got.ca === true, `buy "${got.buy.trim()}", ca disabled ${got.ca}`);
+      const buyText = got.buy.replace(/\s+/g, ' ').trim();
+      if (TOKEN_LIVE) check(`${tag}: live token state (Buy opens the launchpad page, Copy CA works)`, buyText === 'Buy $PONLYSIS' && got.buyHref === TOKEN.buyUrl && got.buyTarget === '_blank' && /noopener/.test(got.buyRel || '') && got.ca === false, `buy "${buyText}" -> ${got.buyHref} (${got.buyTarget}, ${got.buyRel}), ca disabled ${got.ca}`);
+      else check(`${tag}: blank token state`, buyText === 'Buy $PONLYSIS · soon' && got.ca === true, `buy "${got.buy.trim()}", ca disabled ${got.ca}`);
       check(`${tag}: no 0x address, no dashes`, !got.address && !got.dashes, `address ${got.address}, dashes ${got.dashes}`);
       check(`${tag}: landmarks`, got.skip && got.main);
       check(`${tag}: nav ${w < 900 ? 'collapsed to the toggle' : 'links visible'}`, w < 900 ? got.navToggleVisible && !got.linksVisible : !got.navToggleVisible && got.linksVisible, `toggle ${got.navToggleVisible}, links ${got.linksVisible}`);
@@ -437,7 +445,7 @@ export function invalidate() {}
           payment: document.querySelector('[data-payment-line]').textContent + ' ' + document.querySelector('[data-payment-token]').textContent,
           buy: document.querySelector('#payment [data-shell="buy"]').textContent.replace(/\s+/g, ' ').trim(),
         }));
-        return { ok: got.tests.length === 2 && /#3/.test(got.tests[0]) && /#1/.test(got.tests[1]) && got.testLinks.some((h) => h.startsWith('https://x.com/intent/post')) && got.testLinks.includes('/run?id=1') && got.best === 2 && got.received === 2 && got.receivedBold === 0 && got.written === 1 && /Prizes to claim · 0\.002 ETH/.test(got.prizes) && got.claim && /No sponsorships yet/.test(got.sponsorships) && /100 \$PONLYSIS or 0\.0001 ETH/.test(got.payment) && /after the \$PONLYSIS launch/.test(got.payment) && got.buy === 'Buy $PONLYSIS · soon', detail: JSON.stringify(got).slice(0, 500) };
+        return { ok: got.tests.length === 2 && /#3/.test(got.tests[0]) && /#1/.test(got.tests[1]) && got.testLinks.some((h) => h.startsWith('https://x.com/intent/post')) && got.testLinks.includes('/run?id=1') && got.best === 2 && got.received === 2 && got.receivedBold === 0 && got.written === 1 && /Prizes to claim · 0\.002 ETH/.test(got.prizes) && got.claim && /No sponsorships yet/.test(got.sponsorships) && /100 \$PONLYSIS or 0\.0001 ETH/.test(got.payment) && /after the \$PONLYSIS launch/.test(got.payment) && got.buy === (TOKEN_LIVE ? 'Buy $PONLYSIS' : 'Buy $PONLYSIS · soon'), detail: JSON.stringify(got).slice(0, 500) };
       });
       await tryCheck('H4: no console errors and no failed requests on the connected dashboard', async () => { const errs = t.errors(); return { ok: !errs.length, detail: errs.map((e) => `${e.kind} ${e.text.slice(0, 120)}`).join(' | ') }; });
       await t.shot('dashboard-live-1280.png');
