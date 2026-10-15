@@ -492,6 +492,7 @@ if (group('pure: builders, quote and the revert explainer')) {
     eq(lab.decodeRevert(errData('WrongFee()')).name, 'WrongFee');
     eq(lab.decodeRevert(errData('WrongFee(uint256,uint256)', ['uint256', 'uint256'], [1, 2])).name, 'WrongFee');
     eq(lab.decodeRevert(errData('PaymentRefused()')).name, 'PaymentRefused');
+    eq(lab.decodeRevert(errData('PaymentDisabled()')).name, 'PaymentDisabled');
     eq(lab.decodeRevert(errData('NotAuthor()')).name, 'NotAuthor'); eq(lab.decodeRevert(errData('BadStars()')).name, 'BadStars'); eq(lab.decodeRevert(errData('SelfReview()')).name, 'SelfReview');
     eq(lab.decodeRevert(errData('NoteTooLong()')).name, 'NoteTooLong'); eq(lab.decodeRevert(errData('MethodTooLong()')).name, 'MethodTooLong'); eq(lab.decodeRevert(errData('AnalysisTooLong()')).name, 'AnalysisTooLong');
     eq(lab.decodeRevert(errData('NotEnded()')).name, 'NotEnded');
@@ -507,10 +508,15 @@ if (group('pure: builders, quote and the revert explainer')) {
     eq(s('BadPose(uint8)', ['uint8'], [2]), 'This pose fails a geometry check, so the chain would reject it. Run again. An atom lies outside the target box.');
     eq(s('WrongFee()'), 'The run fee changed. Reload the lab and try again.');
     eq(s('WrongFee()', [], [], { runFee: 10n ** 14n }), 'The run fee is 0.0001 ETH plus gas. Reload the lab and try again.');
-    eq(s('PaymentRefused()'), 'That payment option is switched off right now. Reload the lab and try again.');
-    eq(s('PaymentRefused()', [], [], { payWithToken: true, token: null }), 'The $PONLYSIS option opens after the launch. Pay in ETH.');
-    eq(s('PaymentRefused()', [], [], { payWithToken: true, token: FAKE_TOKEN }), 'Paying in $PONLYSIS is switched off right now. Pay in ETH.');
-    eq(s('PaymentRefused()', [], [], { payWithToken: false }), 'Paying in ETH is switched off right now. Pay in $PONLYSIS.');
+    // the contract's two payment errors: PaymentRefused() is the token's transferFrom failing (_takeToken), PaymentDisabled()
+    // is the chosen option being switched off (ethAllowed / tokenAllowed), so only the second one names an option
+    const TOKEN_PAYMENT_FAILED = 'The $PONLYSIS payment did not go through. Check the balance and the allowance, then try again.';
+    eq(s('PaymentRefused()'), TOKEN_PAYMENT_FAILED);
+    eq(s('PaymentRefused()', [], [], { payWithToken: true, token: FAKE_TOKEN }), TOKEN_PAYMENT_FAILED, 'a refused transferFrom is not a switched-off option, whatever the context');
+    eq(s('PaymentDisabled()'), 'That payment option is switched off right now. Reload the lab and try again.');
+    eq(s('PaymentDisabled()', [], [], { payWithToken: true, token: null }), 'The $PONLYSIS option opens after the launch. Pay in ETH.');
+    eq(s('PaymentDisabled()', [], [], { payWithToken: true, token: FAKE_TOKEN }), 'Paying in $PONLYSIS is switched off right now. Pay in ETH.');
+    eq(s('PaymentDisabled()', [], [], { payWithToken: false }), 'Paying in ETH is switched off right now. Pay in $PONLYSIS.');
     eq(s('PaymentRefused(uint8)', ['uint8'], [1], { token: null }), 'The $PONLYSIS option opens after the launch. Pay in ETH.');
     eq(s('TokenNotSet()'), 'The $PONLYSIS option opens after the launch. Pay in ETH.');
     eq(s('NotEnded()'), 'The epoch has not ended yet.');
@@ -526,7 +532,9 @@ if (group('pure: builders, quote and the revert explainer')) {
     eq(s('TransferFailed()', [], [], { payWithToken: true }), 'The $PONLYSIS payment did not go through. Check the balance and the allowance, then try again.');
     eq(s('ERC20InsufficientAllowance(address,uint256,uint256)', ['address', 'uint256', 'uint256'], [W1, 0, RUN_PRICE], { runPrice: RUN_PRICE }), 'Approve the lab to spend 100 $PONLYSIS first, then run the docking test again.');
     eq(s('ERC20InsufficientBalance(address,uint256,uint256)', ['address', 'uint256', 'uint256'], [W1, 0, RUN_PRICE]), 'The connected wallet does not hold enough $PONLYSIS for this docking test.');
-    eq(s('TokenRequired()'), 'Recording needs a minimum $PONLYSIS balance in the connected wallet.');
+    // TokenRequired() is the v2 lab refusing a token payment while no token is set; only a v1 minHold in the context makes it a balance gate
+    eq(s('TokenRequired()'), 'The $PONLYSIS option opens after the launch. Pay in ETH.');
+    eq(s('TokenRequired()', [], [], { minHold: 5n * 10n ** 18n }), 'Recording needs at least 5 $PONLYSIS in the connected wallet.');
     eq(s('NothingOwed()'), 'Nothing to claim from this wallet.');
     eq(s('NoTarget()'), 'Unknown target id.'); eq(s('NoLigand()'), 'Unknown ligand id.'); eq(s('NoRun()'), 'Unknown run id.');
     eq(s('NoValue()'), 'Amount must be greater than zero.'); eq(s('NotOwner()'), 'Only the lab owner can do that.'); eq(s('Reentered()'), 'The contract refused a re-entering call. Try again.');

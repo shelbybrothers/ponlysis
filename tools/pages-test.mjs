@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /*
  * pages-test.mjs: every page (pages builder) in real headless Chrome at 390 and 1280, including the v2 pages
- * /run?id=1 (the not-found state without a chain), /dashboard (the no-wallet state) and the /wallet forwarder.
+ * /run?id=1 (the not-found state without a chain, the found state once js/config.js carries a lab address: run #1 is on
+ * the shared live lab), /dashboard (the no-wallet state) and the /wallet forwarder.
  *
  *   node tools/pages-test.mjs                         starts its own dev server on PORT (default 6131) unless one answers
  *   node tools/pages-test.mjs --base http://127.0.0.1:6131
@@ -12,13 +13,15 @@
  * Per page and width: HTTP status, no horizontal overflow, no console error, no failed request (the modules other
  * builders have not shipped yet are listed and their 404s tolerated ONLY while the file is absent on disk), the copy
  * deck's key strings, the blank $PONLYSIS state, the footer line, and a full-page screenshot in .tmp/shots/ (not shipped).
- * Without a chain the pages must show the not-live state; with --rpc/--contract the chain data must render.
+ * Without a chain (LAB.address null, no --rpc/--contract) the pages must show the not-live state; with --rpc/--contract
+ * the chain data must render; with a lab address in js/config.js the pages read the real lab through the server.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { launchChrome, openPage, sleep } from './lib/cdp.mjs';
+import { LAB } from '../js/config.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -97,7 +100,8 @@ const PAGES = [
     extra: () => ({ cards: document.querySelectorAll('[data-grid] .pc-card--link').length, count: document.querySelector('[data-count]').textContent, pills: document.querySelectorAll('[data-pills] .pc-pill').length }),
     assert: (x, tag) => { check(`${tag}: cards and a count`, x.cards >= 12 && /^\d+ targets$/.test(x.count), `${x.cards} cards, "${x.count}"`); check(`${tag}: cancer filter pills`, x.pills > 5, `${x.pills}`); } },
   { route: '/target?id=1', title: /^Ponlysis · .+ \([0-9][A-Z0-9]{3}\)$/, h1: null, texts: ['Prize pool', 'Amount (ETH)', 'Sponsor', 'Leaderboard', '3D', 'Runs', 'About', 'Dock this target', 'Sponsor pool', 'Settle epoch', 'View on RCSB', 'Reference ligand', 'Resolution', 'Method', 'Cancer groups'],
-    ready: () => document.querySelectorAll('[data-ladder] dt').length > 3,
+    // the leaderboard panel stays empty until the chain read answers (the empty state or the table), which takes a few seconds on a live lab
+    ready: () => document.querySelectorAll('[data-ladder] dt').length > 3 && document.querySelector('[data-panel="leaderboard"]').textContent.trim().length > 0,
     extra: () => ({ rows: document.querySelectorAll('[data-ladder] dt').length, pdb: document.querySelector('[data-pdb-id]').textContent, lb: document.querySelector('[data-panel="leaderboard"]').textContent.trim().slice(0, 80),
       links: [...document.querySelectorAll('a[href^="https://www.rcsb.org/"]')].map((a) => a.textContent.trim()) }),
     assert: (x, tag) => { check(`${tag}: provenance ladder`, x.rows >= 5 && /^[0-9][A-Z0-9]{3}$/.test(x.pdb), `${x.rows} rows, id ${x.pdb}`); check(`${tag}: leaderboard state`, x.lb.length > 0, x.lb);
@@ -129,10 +133,18 @@ const PAGES = [
     ready: () => !!document.querySelector('[data-disconnected]:not([hidden])'),
     extra: () => ({ connectedHidden: document.querySelector('[data-connected]').hidden, h1s: [...document.querySelectorAll('h1')].filter((h) => !h.closest('[hidden]')).length }),
     assert: (x, tag) => check(`${tag}: no-wallet state (the connected sections stay hidden)`, x.connectedHidden === true && x.h1s === 1, `connected hidden ${x.connectedHidden}, h1s ${x.h1s}`) },
-  { route: '/run?id=1', title: 'Ponlysis · Docking test not found', h1: 'Docking test not found', texts: ['Docking test not found', 'No docking test with this id is recorded on chain.', 'Leaderboard', 'Open the lab'],
-    ready: () => !!document.querySelector('[data-notfound]:not([hidden])'),
-    extra: () => ({ pageHidden: document.querySelector('[data-page]').hidden, note: (document.querySelector('[data-notfound-note]') || {}).textContent || '', noteHidden: (document.querySelector('[data-notfound-note]') || {}).hidden }),
-    assert: (x, tag) => { check(`${tag}: not-found state without a chain`, x.pageHidden === true, `page hidden ${x.pageHidden}`); if (!withChain) check(`${tag}: the not-live reason is shown`, x.noteHidden === false && x.note.length > 10, x.note); } },
+  // run #1 exists on the shared live lab, so with a lab address (and no local chain override) the page is in its found state
+  ...(LAB.address && !withChain ? [
+    { route: '/run?id=1', title: 'Ponlysis · Docking test #1', h1: 'Docking test #1', texts: ['Docking test #1', 'Chain score', 'The pose re-scored in your browser', 'Where the structure and the compound come from', 'The search that prepared this pose', 'What a model makes of this test', 'What other wallets say'],
+      ready: () => !!document.querySelector('[data-page]:not([hidden])') && (document.querySelector('[data-h1]') || {}).textContent === 'Docking test #1' && !document.querySelector('[data-score] .pc-skel'),
+      extra: () => ({ pageHidden: document.querySelector('[data-page]').hidden, notFoundHidden: document.querySelector('[data-notfound]').hidden, score: (document.querySelector('[data-score]') || {}).textContent || '' }),
+      assert: (x, tag) => check(`${tag}: found state on the live lab (run #1 is recorded on chain)`, x.pageHidden === false && x.notFoundHidden === true && /kcal\/mol/.test(x.score), `page hidden ${x.pageHidden}, not-found hidden ${x.notFoundHidden}, score "${x.score.slice(0, 80)}"`) },
+  ] : [
+    { route: '/run?id=1', title: 'Ponlysis · Docking test not found', h1: 'Docking test not found', texts: ['Docking test not found', 'No docking test with this id is recorded on chain.', 'Leaderboard', 'Open the lab'],
+      ready: () => !!document.querySelector('[data-notfound]:not([hidden])'),
+      extra: () => ({ pageHidden: document.querySelector('[data-page]').hidden, note: (document.querySelector('[data-notfound-note]') || {}).textContent || '', noteHidden: (document.querySelector('[data-notfound-note]') || {}).hidden }),
+      assert: (x, tag) => { check(`${tag}: not-found state without a chain`, x.pageHidden === true, `page hidden ${x.pageHidden}`); if (!withChain) check(`${tag}: the not-live reason is shown`, x.noteHidden === false && x.note.length > 10, x.note); } },
+  ]),
   { route: '/run', title: 'Ponlysis · Docking test not found', h1: 'Docking test not found', texts: ['Docking test not found', 'Unknown docking test id.'],
     ready: () => !!document.querySelector('[data-notfound]:not([hidden])'), extra: () => ({}), assert: () => {} },
   { route: '/docs', title: 'Ponlysis · Docs', h1: 'Docs', texts: ['How it works', 'Payment', 'Scoring explained', 'What the chain checks', 'Docking methods', 'Reviews', 'Levels and badges', 'AI analysis', 'Post on X', 'What is and is not claimed', 'Wallet and network', 'API', 'Glossary', 'Binding free energy (dG)', 'Reference ligand', 'GET /api/runs', 'GET /api/analyze', 'chain id 4663', '100 $PONLYSIS', '0.0001 ETH', 'Principal Investigator', 'moves.translate', 'Well reviewed'],
@@ -212,6 +224,7 @@ try {
     const A1 = '0x1111111111111111111111111111111111111111';
     const A2 = '0x2222222222222222222222222222222222222222';
     const A3 = '0x3333333333333333333333333333333333333333';
+    const A4 = '0x4444444444444444444444444444444444444444'; // has reviewed nothing
     const SIM = fs.readFileSync(path.join(ROOT, 'tools/sim-wallet.js'), 'utf8');
     const { pathToFileURL } = await import('node:url');
     const E = await import(pathToFileURL(path.join(ROOT, 'js/engine/index.js')).href);
@@ -324,7 +337,7 @@ export function invalidate() {}
         return { ok: got.agree === 'yes' && got.text === 'Chain and browser agree' && got.geo.length === 4 && got.geo.every((g) => g === 'yes') && got.terms === 8 && got.score.includes((SCORE / 1000).toFixed(3)), detail: JSON.stringify(got) };
       });
       await tryCheck('H1: the pose is drawn on the receptor (3D canvas or the RCSB image fallback)', async () => {
-        await t.until(async () => !!(await t.eval(() => document.querySelector('[data-viewer] canvas') || document.querySelector('[data-viewer] .pc-viewer-img--solo'))), 'the viewer', 40000);
+        await t.until(async () => t.eval(() => !!(document.querySelector('[data-viewer] canvas') || document.querySelector('[data-viewer] .pc-viewer-img--solo'))), 'the viewer', 40000);
         const got = await t.eval(() => ({ canvas: !!document.querySelector('[data-viewer] canvas'), pose: (document.querySelector('[data-viewer] .pc-viewer-host') || {}).dataset ? (document.querySelector('[data-viewer] .pc-viewer-host').dataset.pose || '') : '', image: !!document.querySelector('[data-viewer] .pc-viewer-img--solo'), title: document.querySelector('[data-viewer-title]').textContent }));
         return { ok: (got.canvas || got.image) && /4WKQ/.test(got.title), detail: JSON.stringify(got) };
       });
@@ -376,16 +389,24 @@ export function invalidate() {}
       await t.shot('run_id_1-live-390.png');
       await t.close();
     }
-    // H3. /run?id=1 with a connected wallet that is not the author: the review form; as the author: the refusal
+    // H3. /run?id=1 with a connected wallet that is not the author: the review form (a wallet that has not reviewed it gets
+    // Write a review, one that already has gets its own review back to replace, SPEC 9.2); as the author: the refusal
     {
-      const t = await openStubbed('/run?id=1', { wallet: A3 });
+      const t = await openStubbed('/run?id=1', { wallet: A4 });
       await tryCheck('H3: a connected wallet that is not the author gets Write a review (stars picker, 280 counter)', async () => {
         await t.until(async () => !!(await t.eval(() => document.querySelector('.pc-review-form'))), 'the review form', 20000);
         await t.eval(() => { const ta = document.querySelector('.pc-review-form textarea'); ta.value = 'x'.repeat(300).slice(0, ta.maxLength); ta.dispatchEvent(new Event('input', { bubbles: true })); document.querySelectorAll('.pc-star-btn')[3].click(); });
         const got = await t.eval(() => ({ stars: document.querySelectorAll('.pc-star-btn').length, checked: [...document.querySelectorAll('.pc-star-btn')].map((b) => b.getAttribute('aria-checked')).join(''), counter: document.querySelector('.pc-counter').textContent, heading: document.querySelector('.pc-review-form h3').textContent, button: document.querySelector('.pc-review-form button[type="submit"]').textContent, wallet: document.querySelector('[data-wallet-button]').textContent.trim() }));
-        return { ok: got.stars === 5 && got.checked === 'falsefalsefalsetruefalse' && got.counter === '280/280' && got.heading === 'Write a review' && got.button === 'Send review' && /0x3333/.test(got.wallet), detail: JSON.stringify(got) };
+        return { ok: got.stars === 5 && got.checked === 'falsefalsefalsetruefalse' && got.counter === '280/280' && got.heading === 'Write a review' && got.button === 'Send review' && /0x4444/.test(got.wallet), detail: JSON.stringify(got) };
       });
       await t.close();
+      const v = await openStubbed('/run?id=1', { wallet: A3 });
+      await tryCheck('H3: a wallet that already reviewed the test gets its own review back (4 stars, its note) and Replace my review', async () => {
+        await v.until(async () => !!(await v.eval(() => document.querySelector('.pc-review-form'))), 'the review form', 20000);
+        const got = await v.eval(() => ({ checked: [...document.querySelectorAll('.pc-star-btn')].map((b) => b.getAttribute('aria-checked')).join(''), note: document.querySelector('.pc-review-form textarea').value, heading: document.querySelector('.pc-review-form h3').textContent, button: document.querySelector('.pc-review-form button[type="submit"]').textContent }));
+        return { ok: got.checked === 'falsefalsefalsetruefalse' && got.note === 'Good fit.\nThe hinge contact looks right.' && got.heading === 'Your review' && got.button === 'Replace my review', detail: JSON.stringify(got) };
+      });
+      await v.close();
       const u = await openStubbed('/run?id=1', { wallet: A1 });
       await tryCheck('H3: the author cannot review the own test', async () => {
         await u.until(async () => /cannot review your own/.test((await u.text('[data-review-form]')) || ''), 'the refusal', 20000);
@@ -434,9 +455,11 @@ export function invalidate() {}
       await tryCheck('H5: the Most reviewed view lists test #1 first with two reviews', async () => {
         await t.eval(() => document.querySelector('[data-view="reviewed"]').click());
         await t.until(async () => /Most reviewed tests/.test((await t.text('[data-board]')) || ''), 'the most reviewed list', 10000);
-        const rows = await t.eval(() => [...document.querySelectorAll('[data-board] tbody tr')].map((r) => r.textContent.replace(/\s+/g, ' ').trim()));
+        // by cell: the row's textContent runs the average and the count together (4.5 and 2 read "4.52")
+        const rows = await t.eval(() => [...document.querySelectorAll('[data-board] tbody tr')].map((r) => [...r.cells].map((c) => c.textContent.replace(/\s+/g, ' ').trim())));
         const link = await t.eval(() => (document.querySelector('[data-board] tbody a') || {}).getAttribute ? document.querySelector('[data-board] tbody a').getAttribute('href') : null);
-        return { ok: rows.length === 2 && /#1/.test(rows[0]) && /Quercetin into EGFR/.test(rows[0]) && /\b2$/.test(rows[0]) && link === '/run?id=1', detail: rows.join(' | ') };
+        const row = (r) => r.join(' | ');
+        return { ok: rows.length === 2 && /#1/.test(rows[0].join(' ')) && /Quercetin into EGFR/.test(rows[0].join(' ')) && rows[0][rows[0].length - 1] === '2' && rows[0][rows[0].length - 2] === '4.5' && rows[1][rows[1].length - 1] === '1' && link === '/run?id=1', detail: rows.map(row).join(' || ') };
       });
       await tryCheck('H5: the By target view links every row to its test page and carries the Reviews column', async () => {
         await t.eval(() => document.querySelector('[data-view="target"]').click());

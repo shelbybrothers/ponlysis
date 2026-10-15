@@ -288,8 +288,11 @@ console.log('\nC. other wallets and other ways of being injected');
     const text = await w.menu();
     assert(/no wallet in it/.test(text), text);
     const items = await w.items();
-    const host = base.replace(/^https?:\/\//, '');
-    eq(items.map((i) => i.href), [`https://metamask.app.link/dapp/${host}${phoneRoute}`, `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(`${base}${phoneRoute}`)}`]);
+    // "this exact page" is the address bar as it is now: the lab page rewrites ?id=EGFR to carry its target, ligand
+    // and (random) seed, so the expected links are built from the page's own href, not from the route that was opened
+    const here = await w.page.eval(() => location.href);
+    assert(new URL(here).searchParams.get('id') === 'EGFR', `the page lost the query it was opened with: ${here}`);
+    eq(items.map((i) => i.href), [`https://metamask.app.link/dapp/${here.replace(/^https?:\/\//, '')}`, `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(here)}`]);
     const over = await w.page.eval(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert(over <= 0, `the open menu makes the page ${over}px too wide`);
   });

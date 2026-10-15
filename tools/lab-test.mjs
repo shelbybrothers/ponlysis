@@ -11,8 +11,9 @@
  * Scenarios (screenshots land in .tmp/shots-lab/):
  *   A  1280, the real modules: loads without console errors, pickers filter and select (deep link, cancer pill,
  *      search), the direct RCSB and PubChem links in the rows (SPEC 9.4) open in a new tab without taking the tap,
- *      a Quick run completes with a negative score and the pose in the viewer, geometry rows pass, the not-live
- *      docking test state shows while LAB.address is null, Share copies the URL, the Method panel state
+ *      a Quick run completes with a negative score and the pose in the viewer, geometry rows pass, the docking test
+ *      state follows js/config.js (not-live while LAB.address is null; with an address, the connect-a-wallet state read
+ *      from the real chain, so it needs the network), Share copies the URL, the Method panel state
  *   B  390, the real modules plus the method stub: pair bar, full-screen picker sheet, 240 px viewer, sticky Find a
  *      pose bar, the Method sheet, no overflow at 390 and 360
  *   C  1280, the simulated wallet (tools/sim-wallet.js) with a stubbed live chain (js/chain.js, js/lab.js and
@@ -38,7 +39,7 @@ import net from 'node:net';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { launchChrome, openPage, sleep } from './lib/cdp.mjs';
-import { MULTICALL3 } from '../js/config.js';
+import { MULTICALL3, LAB } from '../js/config.js';
 import { encodeCall } from '../js/rpc.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -398,13 +399,26 @@ console.log('A. desktop 1280, real modules');
     assert(/^(strong|moderate|weak) binder$/.test(await t.text('.lab-band-label')), await t.text('.lab-band-label'));
     await t.shot('A-run-1280.png');
   });
-  await check('the not-live state: Run docking test disabled with the lab line while LAB.address is null, no payment cards', async () => {
-    eq(await t.attr('[data-lab-action]', 'data-record-state'), 'not-live');
-    eq(await t.text('[data-lab-action] [data-record]'), 'Run docking test');
-    assert(await t.eval(() => document.querySelector('[data-lab-action] [data-record]').disabled), 'disabled');
-    eq(await t.text('[data-record-note]'), 'The lab opens when the contract is live.');
-    eq(await t.eval(() => document.querySelectorAll('[data-lab-action] .lab-pay').length), 0, 'no payment cards while not live');
-  });
+  if (LAB.address) {
+    // the lab is live (js/config.js carries its address): the page reads the real status, and with no wallet the run
+    // button asks for one; the payment cards and the fee line come from that status. Chain reads can be slow, so wait.
+    await check('the live state without a wallet: Run docking test asks to connect a wallet, with the payment cards and the fee line, no not-live note', async () => {
+      await t.until(async () => (await t.attr('[data-lab-action]', 'data-record-state')) === 'connect', 'the connect state (the lab status is read from the chain)', 40000);
+      eq(await t.text('[data-lab-action] [data-record]'), 'Connect wallet to run the test');
+      assert(!(await t.eval(() => document.querySelector('[data-lab-action] [data-record]').disabled)), 'the button is enabled: it opens the wallet menu');
+      eq(await t.eval(() => document.querySelectorAll('[data-record-note]').length), 0, 'no not-live line while the lab is live');
+      eq(await t.eval(() => [...document.querySelectorAll('[data-lab-action] .lab-pay [role="radio"]')].map((c) => c.dataset.pay)), ['eth', 'token']);
+      assert(/^Docking test fee .+ \$PONLYSIS or .+ ETH \+ gas · paid to the lab treasury$/.test(await t.text('[data-lab-action] [data-fee]')), await t.text('[data-lab-action] [data-fee]'));
+    });
+  } else {
+    await check('the not-live state: Run docking test disabled with the lab line while LAB.address is null, no payment cards', async () => {
+      eq(await t.attr('[data-lab-action]', 'data-record-state'), 'not-live');
+      eq(await t.text('[data-lab-action] [data-record]'), 'Run docking test');
+      assert(await t.eval(() => document.querySelector('[data-lab-action] [data-record]').disabled), 'disabled');
+      eq(await t.text('[data-record-note]'), 'The lab opens when the contract is live.');
+      eq(await t.eval(() => document.querySelectorAll('[data-lab-action] .lab-pay').length), 0, 'no payment cards while not live');
+    });
+  }
   await check(METHOD_MODULE_ON_DISK ? 'the Method panel is ready with the engine presets' : 'the Method panel shows the engine-unavailable line while js/engine/method.js is absent', async () => {
     if (METHOD_MODULE_ON_DISK) {
       eq(await t.attr('[data-lab]', 'data-methods'), 'on');
